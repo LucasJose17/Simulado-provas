@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulado – Redes (ênfase em HTTP)</title>
+<style>
+:root{--bg:#f3f6f4;--card:#fff;--ink:#14231c;--mut:#5b6b63;--line:#d3ddd7;--acc:#0f766e;--ok:#15803d;--okb:#dcfce7;--no:#b91c1c;--nob:#fee2e2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1714;--card:#16231e;--ink:#e6f0eb;--mut:#93a69c;--line:#2a3b34;--acc:#2dd4bf;--ok:#4ade80;--okb:#12321f;--no:#f87171;--nob:#3a1616}}
+:root[data-theme="dark"]{--bg:#0e1714;--card:#16231e;--ink:#e6f0eb;--mut:#93a69c;--line:#2a3b34;--acc:#2dd4bf;--ok:#4ade80;--okb:#12321f;--no:#f87171;--nob:#3a1616}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,'Iowan Old Style',serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.5rem;margin:0 0 4px;line-height:1.2}
+.sub{color:var(--mut);margin:0 0 18px;font-family:system-ui,sans-serif;font-size:.9rem}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;color:var(--mut);font:.85rem system-ui,sans-serif;margin-bottom:14px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.q h2{font-size:1.1rem;margin:0 0 14px;line-height:1.4}
+.o{display:block;width:100%;text-align:left;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px;font:inherit;font-size:.97rem;cursor:pointer}
+.o:focus-visible,.btn:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.o.ok{border-color:var(--ok);background:var(--okb)}
+.o.no{border-color:var(--no);background:var(--nob)}
+.o:disabled{cursor:default;color:var(--ink)}
+.exp{margin-top:6px;padding:12px 14px;border-left:4px solid var(--acc);background:var(--bg);border-radius:6px;font-size:.93rem}
+.btn{display:block;width:100%;margin-top:14px;padding:13px;border:0;border-radius:10px;background:var(--acc);color:#fff;font:600 1rem system-ui,sans-serif;cursor:pointer}
+:root:not([data-theme="light"]) .btn{color:#062b26}
+.big{font-size:3rem;font-weight:700;margin:0;line-height:1}
+.rev{margin:16px 0 0;padding:0;list-style:none;font-size:.9rem}
+.rev li{padding:10px 0;border-top:1px solid var(--line)}
+.rev b{color:var(--no)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Simulado: Camada de Aplicação</h1>
+<p class="sub">Redes de Computadores · 30 questões: ênfase em HTTP + DNS, TCP/UDP, P2P e CDN</p>
+<div id="quiz">
+  <div class="bar"><i id="pb"></i></div>
+  <div class="meta"><span id="cnt"></span><span id="sc"></span></div>
+  <div class="q"><h2 id="qt"></h2><div id="ops"></div><div id="ex" class="exp hide"></div></div>
+  <button class="btn hide" id="nx">Próxima</button>
+</div>
+<div id="end" class="q hide">
+  <p class="big" id="pct"></p>
+  <p id="msg" style="margin:8px 0 0"></p>
+  <div id="revw"></div>
+  <button class="btn" id="rs">Refazer simulado</button>
+</div>
+</main>
+<script>
+var H=[
+["O que significa dizer que o HTTP é 'stateless' (sem estado)?",["Não usa TCP","O servidor não guarda informação sobre requisições anteriores do cliente","Não possui cabeçalhos","Só aceita uma requisição por conexão"],1,"O servidor trata cada requisição de forma independente, o que simplifica o projeto e amplia a escalabilidade."],
+["Qual é a vantagem de o HTTP ser stateless?",["Permite carrinhos de compra sem cookies","Simplifica o servidor e melhora a escalabilidade","Elimina a necessidade de TCP","Garante criptografia"],1,"Sem guardar estado por cliente, o servidor fica mais simples e escala melhor."],
+["Qual transporte e porta o HTTP usa por padrão?",["UDP, porta 53","TCP, porta 80","TCP, porta 443","UDP, porta 80"],1,"HTTP: TCP/80. HTTPS: TCP/443."],
+["Qual a diferença entre HTTP e HTTPS?",["HTTPS usa UDP","HTTPS encapsula requisição e resposta em conexão criptografada via TLS","HTTPS não usa portas","HTTPS é stateful"],1,"O HTTPS é o HTTP sobre TLS, com criptografia, integridade e autenticação."],
+["Por que o HTTP puro é inseguro em redes abertas?",["Usa UDP","Trafega em texto puro, e sniffers como o Wireshark capturam senhas e dados","Não tem cabeçalhos","Só funciona em IPv4"],1,"Sem TLS, qualquer sniffer na rota lê o conteúdo."],
+["Quantos passos tem o mecanismo de cookies?",["2","3","4","5"],2,"Set-Cookie na resposta, armazenamento no navegador, envio do Cookie nas requisições seguintes e validação no backend."],
+["Qual cabeçalho o servidor usa para criar um cookie no cliente?",["Cookie:","Set-Cookie:","Host:","Accept:"],1,"O servidor envia Set-Cookie na resposta. O navegador devolve o valor no cabeçalho Cookie."],
+["Qual cabeçalho o navegador usa para reenviar o cookie ao servidor?",["Set-Cookie:","Cookie:","Content-Type:","Location:"],1,"Nas requisições seguintes o cliente inclui Cookie: ID."],
+["Para que servem os cookies, apesar de o HTTP ser stateless?",["Acelerar o DNS","Manter sessões autenticadas e transações comerciais","Criptografar dados","Trocar a porta"],1,"Eles permitem ao servidor reconhecer o cliente entre requisições (login, carrinho)."],
+["No HTTP não persistente (HTTP/1.0), cada objeto usa:",["A mesma conexão TCP para todos","Uma conexão TCP própria","UDP","Nenhuma conexão"],1,"Cada par requisição/resposta abre e fecha uma conexão TCP separada."],
+["Quantos RTTs por objeto no HTTP não persistente (sem contar transmissão)?",["1","2","3","4"],1,"1 RTT do handshake TCP + 1 RTT para requisição e resposta."],
+["Uma página tem 1 arquivo base e 10 imagens (11 objetos). Quantos RTTs no total em HTTP não persistente, sem conexões paralelas e sem transmissão?",["11","12","22","33"],2,"11 objetos × 2 RTTs = 22 RTTs."],
+["Mesma página (11 objetos) em HTTP persistente, sem pipelining: quantos RTTs?",["11","12","22","2"],1,"1 RTT de handshake TCP + 11 RTTs de requisição/resposta = 12 RTTs."],
+["Qual versão introduziu conexões persistentes como padrão?",["HTTP/1.0","HTTP/1.1","HTTP/0.9","DNS"],1,"O HTTP/1.1 mantém o socket TCP aberto para vários objetos."],
+["Qual é a principal vantagem da conexão persistente?",["Menos atraso e menos congestionamento e overhead","Mais segurança","Não usa TCP","Elimina cookies"],0,"Evita repetir o handshake TCP e reduz o overhead nos nós."],
+["Qual protocolo de transporte dá ao HTTP a entrega confiável?",["UDP","TCP","ICMP","DNS"],1,"O HTTP roda sobre o TCP e herda dele a confiabilidade."],
+["Por que o HTTP exige transporte confiável (sem perdas)?",["Páginas Web toleram zero perda de bytes","Páginas Web toleram muita perda","Usa vídeo em tempo real","Não usa dados"],0,"Páginas Web precisam de 100% de integridade, como e-mail e FTP."],
+["Antes de o navegador abrir a conexão TCP com www.site.com, o que ocorre?",["Uma consulta DNS para descobrir o IP","Uma consulta ICMP","Um cookie é enviado","O TLS é encerrado"],0,"O nome é traduzido em IP pelo DNS e só depois a conexão é aberta."],
+["Qual método HTTP é o mais usado para pedir uma página ao servidor?",["GET","POST","DELETE","PUT"],0,"GET solicita um objeto. POST envia dados (ex.: formulários)."],
+["Qual código de status indica que o recurso não foi encontrado?",["200","301","404","500"],2,"200 OK, 301 movido permanentemente, 404 não encontrado, 500 erro interno do servidor."],
+["Qual código HTTP indica sucesso na requisição?",["200","404","500","301"],0,"200 OK significa que a requisição foi bem-sucedida."],
+["Uma mensagem de requisição HTTP é composta por:",["Linha de requisição, cabeçalhos e corpo opcional","Somente o corpo","Somente cabeçalhos de rede","Um datagrama UDP"],0,"Linha de requisição (método, URL, versão), linhas de cabeçalho e corpo opcional."],
+["Quem mantém o registro dos cookies e a lógica de validação?",["O roteador","O navegador guarda o cookie e o backend do servidor o valida","O DNS","O ISP"],1,"O cookie fica no navegador, e o servidor o valida contra seu banco de dados."],
+["Sobre o TLS, qual afirmação é correta?",["Fica na camada de aplicação: a aplicação criptografa antes de enviar ao socket TCP","Substitui o TCP","Só funciona com UDP","Não autentica as pontas"],0,"O TLS dá criptografia, integridade e autenticação das pontas."]
+];
+var O=[
+["Onde rodam as aplicações de rede?",["Nos roteadores do núcleo","Apenas nos sistemas finais (borda)","Nos comutadores de pacotes","Em qualquer dispositivo da rede, inclusive no núcleo"],1,"Aplicações rodam só nos hosts da borda; o núcleo não executa software de usuário."],
+["Qual característica define o servidor na arquitetura cliente-servidor?",["IP dinâmico via DHCP","Está sempre ligado e tem IP fixo e conhecido","Comunica-se diretamente com outros servidores clientes","Só recebe conexões esporádicas"],1,"Servidor: always-on, IP fixo. Clientes usam IP dinâmico e não se comunicam entre si."],
+["Qual é um ponto fraco clássico do modelo cliente-servidor?",["Churn","Ponto único de falha e gargalo de escalabilidade","Falta de endereço IP","Uso de portas"],1,"O servidor central tem capacidade finita e, se cair, o serviço para (SPOF)."],
+["O que é 'churn' em P2P?",["Fatiamento de arquivos","Entrada e saída imprevisível de pares","Troca de chaves TLS","Cache de DNS"],1,"Churn é a alta rotatividade de nós, que entram e saem alterando IPs."],
+["Por que o P2P é autoescalável?",["Usa servidores maiores","Cada novo par baixa, mas também fornece upload ao enxame","Usa UDP","Não precisa de IP"],1,"Cada participante adiciona demanda e capacidade de serviço ao mesmo tempo."],
+["Qual aplicação é tolerante a perdas parciais?",["Transferência de arquivos (FTP)","E-mail","Transação bancária","Chamada de voz via IP"],3,"Multimídia em tempo real tolera perdas; FTP, e-mail e bancos exigem 100% de integridade."],
+["Uma aplicação 'elástica' é aquela que:",["Exige 5 Mbps constantes","Adapta-se a qualquer vazão disponível","Exige atraso < 150 ms","Não usa transporte"],1,"Ex.: e-mail e downloads se adaptam à banda disponível."],
+["Qual serviço o TCP NÃO garante?",["Entrega confiável","Controle de fluxo","Banda mínima e limite de atraso","Controle de congestionamento"],2,"TCP não garante banda mínima nem atraso máximo (nem o UDP)."],
+["O handshake de 3 vias do TCP consiste em:",["GET, 200, ACK","SYN, SYN-ACK, ACK","HELLO, OK, BYE","DNS, ARP, ICMP"],1,"SYN → SYN-ACK → ACK. Isso custa 1 RTT antes dos dados."],
+["Qual o tamanho do cabeçalho base do UDP?",["8 bytes","20 bytes","32 bytes","64 bytes"],0,"UDP: 8 bytes. TCP: 20 bytes ou mais (com opções)."],
+["Um processo é identificado na rede por:",["Só o IP","Só a porta","IP + porta","MAC + IP"],2,"O IP identifica o host e a porta (16 bits) identifica o processo nele."],
+["Quais portas padrão correspondem a HTTPS, DNS e SMTP?",["443, 53, 25","80, 53, 25","443, 25, 53","8080, 53, 110"],0,"HTTPS 443, DNS 53, SMTP 25, HTTP 80."],
+["Onde o TLS é implementado, segundo o resumo?",["No roteador","Na camada de aplicação, antes de enviar ao socket TCP","Na camada física","Dentro do UDP"],1,"A aplicação criptografa antes de entregar ao socket, dando criptografia, integridade e autenticação."],
+["O DNS normalmente usa qual porta e transporte?",["80/TCP","53/UDP","443/TCP","25/UDP"],1,"UDP 53, para minimizar overhead e agilizar consultas."],
+["Qual é a ordem hierárquica das consultas DNS?",["Autoritativo → TLD → Raiz","Raiz → TLD → Autoritativo","TLD → Raiz → Autoritativo","Raiz → Autoritativo → TLD"],1,"Raiz indica o TLD, que indica o servidor autoritativo."],
+["Qual registro DNS mapeia hostname para IPv6?",["A","AAAA","CNAME","MX"],1,"A → IPv4; AAAA → IPv6; CNAME → apelido; MX → servidor de e-mail; NS → servidor autoritativo."],
+["Na consulta iterativa:",["O servidor faz toda a busca pelo cliente","O servidor indica o próximo servidor a consultar","Não há cache","Só a raiz responde"],1,"Na recursiva, o servidor contactado faz toda a navegação e devolve o IP pronto."],
+["O que determina a validade de uma entrada no cache DNS?",["MTU","TTL","RTT","SYN"],1,"O TTL define por quanto tempo a resposta pode ser mantida antes de descartada."],
+["O ping usa qual protocolo para enviar seus pacotes de teste?",["DNS","ICMP","HTTP","UDP 53"],1,"Ele faz antes uma consulta DNS, mas os pacotes de teste são ICMP (camada de rede)."],
+["Um NXDOMAIN indica que:",["O servidor caiu","O domínio não existe","Houve timeout","O IP mudou"],1,"Non-Existent Domain: o domínio não existe na base autoritativa."],
+["No BitTorrent, o que faz o 'Rarest First'?",["Baixa primeiro os pedaços com menos cópias no enxame","Baixa os maiores arquivos","Escolhe os pares mais rápidos","Envia só a quem tem mais dados"],0,"Evita a extinção de blocos raros no enxame."],
+["No Tit-for-Tat, o 'optimistic unchoking' serve para:",["Bloquear pares lentos","Testar aleatoriamente um par extra (a cada 30 s) em busca de conexão melhor","Aumentar o tamanho dos chunks","Encerrar o tracker"],1,"Envia-se aos 4 melhores fornecedores, e um nó extra aleatório é testado periodicamente."],
+["Qual é o papel do tracker no BitTorrent?",["Criptografar os chunks","Informar a lista de pares do enxame","Armazenar todo o arquivo","Resolver nomes DNS"],1,"Ele monitora os membros ativos e fornece IPs de vizinhos para a conexão inicial."],
+["No DASH, quem decide a qualidade do próximo bloco?",["O servidor","O cliente (player), medindo vazão e buffer","O roteador","O DNS"],1,"O controle é centrado no cliente; o manifesto lista as URLs de cada bloco e qualidade."],
+["Na estratégia 'Enter Deep' das CDNs, os servidores ficam:",["Perto dos IXPs, em poucos clusters grandes","Dentro das redes de acesso dos ISPs","Só no servidor de origem","No núcleo dos roteadores"],1,"Enter Deep: latência mínima, mas alta complexidade de gestão. 'Bring Home' usa poucos clusters perto de IXPs."],
+["Como a CDN escolhe o servidor de borda para o cliente?",["Sorteio","Pelo DNS autoritativo da CDN, analisando o IP do cliente","Pelo cookie","Pelo TLS"],1,"O DNS da CDN responde com o edge server mais próximo e menos congestionado."],
+["Por que google.com pode retornar vários IPs?",["Erro de configuração","Balanceamento de carga (DNS round-robin) e tolerância a falhas","O TTL é zero","Uso de IPv6 apenas"],1,"Múltiplos IPs distribuem a carga. IPs diferentes entre 8.8.8.8 e 1.1.1.1 vêm do Anycast e de servidores de borda próximos."]
+];
+
+
+var i,sc,order,wrong,$=function(x){return document.getElementById(x)};
+function shuf(a){a=a.slice();for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1)),t=a[k];a[k]=a[j];a[j]=t}return a}
+function start(){order=shuf(shuf(H).slice(0,14).concat(shuf(O).slice(0,16)));i=0;sc=0;wrong=[];$('quiz').classList.remove('hide');$('end').classList.add('hide');show()}
+function show(){var q=order[i];$('qt').textContent=q[0];$('cnt').textContent='Questão '+(i+1)+' de '+order.length;$('sc').textContent='Acertos: '+sc;$('pb').style.width=(i/order.length*100)+'%';
+$('ex').classList.add('hide');$('nx').classList.add('hide');var o=$('ops');o.innerHTML='';
+var idx=shuf([0,1,2,3]);
+idx.forEach(function(n){var b=document.createElement('button');b.className='o';b.textContent=q[1][n];b.onclick=function(){pick(n,o)};b.dataset.n=n;o.appendChild(b)})}
+function pick(n,o){var q=order[i];var bs=o.children;for(var k=0;k<bs.length;k++){bs[k].disabled=true;var v=+bs[k].dataset.n;if(v===q[2])bs[k].classList.add('ok');else if(v===n)bs[k].classList.add('no')}
+if(n===q[2])sc++;else wrong.push(q);
+$('sc').textContent='Acertos: '+sc;$('ex').textContent=(n===q[2]?'Correto. ':'Errado. ')+q[3];$('ex').classList.remove('hide');
+$('nx').textContent=i===order.length-1?'Ver resultado':'Próxima';$('nx').classList.remove('hide');$('nx').focus()}
+$('nx').onclick=function(){i++;if(i>=order.length)finish();else show()};
+function finish(){$('quiz').classList.add('hide');$('end').classList.remove('hide');var p=Math.round(sc/order.length*100);
+$('pct').textContent=sc+'/'+order.length+' ('+p+'%)';
+$('msg').textContent=p>=85?'Excelente! Você está muito bem preparado.':p>=65?'Bom caminho. Revise os pontos abaixo.':'Vale reler o resumo e refazer o simulado.';
+var h='';if(wrong.length){h='<p style="margin:16px 0 0;font-family:system-ui,sans-serif"><b>Para revisar:</b></p><ul class="rev">';wrong.forEach(function(q){h+='<li><b>'+q[0]+'</b><br>'+q[3]+'</li>'});h+='</ul>'}
+$('revw').innerHTML=h;window.scrollTo(0,0)}
+$('rs').onclick=function(){start();window.scrollTo(0,0)};
+start();
+</script>
+</body>
+</html>
